@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/back1ng/iot-battery-limiter/internal/battery"
+	"github.com/back1ng/iot-battery-limiter/internal/env"
 	"github.com/joho/godotenv"
 )
 
@@ -180,6 +182,34 @@ func (api *OauthToken) Disable(id string) {
 	}
 }
 
+func (api *OauthToken) PrintDevices() {
+	devices := api.Info()
+
+	fmt.Println("Please, choose your device number by number before \")\"")
+	for i, d := range devices.Devices {
+		fmt.Println(fmt.Sprintf("%d) Name: %s, Id: %s", i, d.Name, d.Id))
+	}
+
+	input := bufio.NewScanner(os.Stdin)
+	input.Scan()
+
+	id, err := strconv.Atoi(input.Text())
+
+	if err != nil {
+		// handle error
+	}
+
+	os.Setenv("DEVICE_ID", devices.Devices[id].Id)
+
+	file, err := os.Open("./.env")
+
+	defer file.Close()
+
+	env.Write(file, "DEVICE_ID", devices.Devices[id].Id)
+
+	fmt.Println("You select: " + input.Text())
+}
+
 func main() {
 	err := godotenv.Load()
 
@@ -207,9 +237,11 @@ func main() {
 
 	token := OauthToken{"Bearer " + os.Getenv("YANDEX_OAUTH")}
 
-	devices := token.Info()
+	device := os.Getenv("DEVICE_ID")
 
-	id := devices.Devices[0].Id
+	if device == "" {
+		token.PrintDevices()
+	}
 
 	for {
 		percent := battery.Get()
@@ -217,9 +249,9 @@ func main() {
 		fmt.Println(percent)
 
 		if percent > pmax {
-			token.Disable(id)
+			token.Disable(device)
 		} else if percent < pmin {
-			token.Enable(id)
+			token.Enable(device)
 		}
 
 		time.Sleep(time.Minute * 1)
