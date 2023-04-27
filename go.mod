@@ -9,6 +9,7 @@ require (
 
 require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
+	github.com/ztrue/shutdown v0.1.1 // indirect
 	golang.org/x/sys v0.7.0 // indirect
 	howett.net/plist v1.0.0 // indirect
 )

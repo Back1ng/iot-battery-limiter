@@ -14,6 +14,7 @@ import (
 	"github.com/back1ng/iot-battery-limiter/internal/battery"
 	"github.com/back1ng/iot-battery-limiter/internal/configuration"
 	"github.com/back1ng/iot-battery-limiter/internal/env"
+	"github.com/ztrue/shutdown"
 )
 
 type OauthToken struct {
@@ -244,24 +245,31 @@ func main() {
 		device = os.Getenv("DEVICE_ID")
 	}
 
-	for {
-		percent := battery.Get()
+	shutdown.Add(func() {
+		token.Disable(device)
+	})
 
-		fmt.Println(percent)
+	go func() {
+		for {
+			percent := battery.Get()
 
-		if percent >= pmax {
-			fmt.Println("got disable percentage")
-			if battery.Charging() {
-				token.Disable(device)
+			fmt.Println(percent)
+
+			if percent >= pmax {
+				fmt.Println("got disable percentage")
+				if battery.Charging() {
+					token.Disable(device)
+				}
+			} else if percent <= pmin {
+				fmt.Println("got enable percentage")
+				if battery.Discharging() {
+					token.Enable(device)
+				}
 			}
-		} else if percent <= pmin {
-			fmt.Println("got enable percentage")
-			if battery.Discharging() {
-				token.Enable(device)
-			}
+
+			time.Sleep(time.Second * 30)
 		}
+	}()
 
-		time.Sleep(time.Second * 30)
-	}
-
+	shutdown.Listen()
 }
