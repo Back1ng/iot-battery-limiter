@@ -248,10 +248,16 @@ func main() {
 
 		fmt.Println(percent)
 
-		if percent > pmax {
-			token.Disable(device)
-		} else if percent < pmin {
-			token.Enable(device)
+		if percent >= pmax {
+			fmt.Println("got disable percentage")
+			if battery.Charging() {
+				token.Disable(device)
+			}
+		} else if percent <= pmin {
+			fmt.Println("got enable percentage")
+			if !battery.Charging() {
+				token.Enable(device)
+			}
 		}
 
 		time.Sleep(time.Minute * 1)
