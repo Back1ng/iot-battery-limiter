@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/back1ng/iot-battery-limiter/internal/battery"
+	"github.com/back1ng/iot-battery-limiter/internal/configuration"
 	"github.com/back1ng/iot-battery-limiter/internal/env"
-	"github.com/joho/godotenv"
 )
 
 type OauthToken struct {
@@ -211,11 +211,7 @@ func (api *OauthToken) PrintDevices() {
 }
 
 func main() {
-	err := godotenv.Load()
-
-	if err != nil {
-		panic("Cannot load .env!")
-	}
+	configuration.GenerateEnv()
 
 	if os.Getenv("YANDEX_OAUTH") == "" {
 		panic("Yandex oauth key must be not empty!")
@@ -231,6 +227,10 @@ func main() {
 	pmin, err := strconv.Atoi(percentageMin)
 	pmax, err := strconv.Atoi(percentageMax)
 
+	if err != nil {
+		// handle error
+	}
+
 	if pmin >= pmax {
 		panic("Minimum percentage must be not great than Maximum percentage")
 	}
@@ -241,6 +241,7 @@ func main() {
 
 	if device == "" {
 		token.PrintDevices()
+		device = os.Getenv("DEVICE_ID")
 	}
 
 	for {
@@ -255,12 +256,12 @@ func main() {
 			}
 		} else if percent <= pmin {
 			fmt.Println("got enable percentage")
-			if !battery.Charging() {
+			if battery.Discharging() {
 				token.Enable(device)
 			}
 		}
 
-		time.Sleep(time.Minute * 1)
+		time.Sleep(time.Second * 30)
 	}
 
 }

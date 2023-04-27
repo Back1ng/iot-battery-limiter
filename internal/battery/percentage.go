@@ -23,3 +23,13 @@ func Charging() bool {
 
 	return battery.State.String() == "Charging"
 }
+
+func Discharging() bool {
+	battery, err := battery.Get(0)
+
+	if err != nil {
+		// handle error
+	}
+
+	return battery.State.String() == "Discharging"
+}
