@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/back1ng/iot-battery-limiter/internal/env"
 )
@@ -62,6 +63,22 @@ type ResponseChangeStatusDevice struct {
 	} `json:"devices"`
 }
 
+func sendSafeRequest(req *http.Request) *http.Response {
+	res, err := http.DefaultClient.Do(req)
+
+	for err != nil {
+		res, err = http.DefaultClient.Do(req)
+
+		fmt.Println("Cannot send request to Yandex! Please, check your internet connection.")
+		fmt.Println("Trying again after 10 second.")
+		fmt.Println("")
+
+		time.Sleep(time.Second * 10)
+	}
+
+	return res
+}
+
 func (api *OauthToken) addHeaders(header http.Header) {
 	header.Add("Authorization", api.Token)
 	header.Add("X-Request-Id", "ac851019-b7dd-45dc-aace-0d9a8e47fc66")
@@ -77,10 +94,7 @@ func (api *OauthToken) Info() ResponseGetDevices {
 		// handle error
 	}
 
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		// handle error
-	}
+	res := sendSafeRequest(req)
 
 	defer res.Body.Close()
 
@@ -119,21 +133,16 @@ func (api *OauthToken) Enable(id string) {
 	req, err := http.NewRequest("POST", ApiUrl+"/v1.0/devices/actions", bytes.NewBuffer(body))
 
 	if err != nil {
-		// handle error
+		// throw error
 	}
 
 	api.addHeaders(req.Header)
 
-	res, err := http.DefaultClient.Do(req)
-
-	if err != nil {
-		// handle error
-	}
+	res := sendSafeRequest(req)
 
 	resBody, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		// handle error
 	}
 
 	defer res.Body.Close()
@@ -157,11 +166,7 @@ func (api *OauthToken) Disable(id string) {
 
 	api.addHeaders(req.Header)
 
-	res, err := http.DefaultClient.Do(req)
-
-	if err != nil {
-		// handle error
-	}
+	res := sendSafeRequest(req)
 
 	resBody, err := io.ReadAll(res.Body)
 
