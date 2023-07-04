@@ -148,11 +148,6 @@ func (api *OauthToken) Enable(id string) {
 	defer res.Body.Close()
 
 	fmt.Println(string(resBody))
-
-	var result ResponseChangeStatusDevice
-	if err := json.Unmarshal(resBody, &result); err != nil {
-		fmt.Println("Can not unmarshal JSON")
-	}
 }
 
 func (api *OauthToken) Disable(id string) {
@@ -168,18 +163,13 @@ func (api *OauthToken) Disable(id string) {
 
 	res := sendSafeRequest(req)
 
-	resBody, err := io.ReadAll(res.Body)
+	_, err = io.ReadAll(res.Body)
 
 	if err != nil {
 		// handle error
 	}
 
 	defer res.Body.Close()
-
-	var result ResponseChangeStatusDevice
-	if err := json.Unmarshal(resBody, &result); err != nil {
-		fmt.Println("Can not unmarshal JSON")
-	}
 }
 
 func (api *OauthToken) PrintDevices() {
