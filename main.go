@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/back1ng/iot-battery-limiter/internal/battery"
@@ -83,5 +84,5 @@ func main() {
 		}
 	}()
 
-	shutdown.Listen()
+	shutdown.Listen(syscall.SIGINT, syscall.SIGTERM)
 }

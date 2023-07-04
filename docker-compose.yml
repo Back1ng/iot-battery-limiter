@@ -1,0 +1,7 @@
+version: '3.5'
+
+services:
+  golang:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile
