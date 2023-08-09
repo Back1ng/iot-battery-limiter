@@ -67,13 +67,13 @@ func sendSafeRequest(req *http.Request) *http.Response {
 	res, err := http.DefaultClient.Do(req)
 
 	for err != nil {
-		res, err = http.DefaultClient.Do(req)
-
 		fmt.Println("Cannot send request to Yandex! Please, check your internet connection.")
 		fmt.Println("Trying again after 10 second.")
 		fmt.Println("")
 
 		time.Sleep(time.Second * 10)
+
+		res, err = http.DefaultClient.Do(req)
 	}
 
 	return res
