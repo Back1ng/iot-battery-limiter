@@ -4,32 +4,32 @@ import (
 	"github.com/distatus/battery"
 )
 
-func Get() int {
+func Get() (int, error) {
 	battery, err := battery.Get(0)
 
 	if err != nil {
-		// handle error
+		return 0, err
 	}
 
-	return int(battery.Current / battery.Full * 100)
+	return int(battery.Current / battery.Full * 100), nil
 }
 
-func Charging() bool {
+func Charging() (bool, error) {
 	battery, err := battery.Get(0)
 
 	if err != nil {
-		// handle error
+		return false, err
 	}
 
-	return battery.State.String() == "Charging"
+	return battery.State.String() == "Charging", nil
 }
 
-func Discharging() bool {
+func Discharging() (bool, error) {
 	battery, err := battery.Get(0)
 
 	if err != nil {
-		// handle error
+		return false, err
 	}
 
-	return battery.State.String() == "Discharging"
+	return battery.State.String() == "Discharging", nil
 }

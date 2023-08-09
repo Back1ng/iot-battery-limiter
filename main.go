@@ -64,18 +64,36 @@ func main() {
 
 	go func() {
 		for {
-			percent := battery.Get()
+			percent, err := battery.Get()
+
+			if err != nil {
+				fmt.Println(err)
+			}
 
 			fmt.Println(percent)
 
 			if percent >= pmax {
 				fmt.Println("got disable percentage")
-				if battery.Charging() {
+
+				isCharging, err := battery.Charging()
+
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				if isCharging {
 					token.Disable(device)
 				}
 			} else if percent <= pmin {
 				fmt.Println("got enable percentage")
-				if battery.Discharging() {
+
+				isDischarging, err := battery.Discharging()
+
+				if err != nil {
+					fmt.Println(err)
+				}
+
+				if isDischarging {
 					token.Enable(device)
 				}
 			}
