@@ -50,6 +50,11 @@ func GenerateEnv() {
 		}
 	}
 
+	if conf.DeviceId < 0 {
+		str, _ := strconv.Atoi(conf.YandexOauth.PrintDevices())
+		conf.DeviceId = str
+	}
+
 	godotenv.Write(conf.ToMap(), "./.env")
 	godotenv.Load()
 }

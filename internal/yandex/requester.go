@@ -10,8 +10,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/back1ng/iot-battery-limiter/internal/env"
 )
 
 var ApiUrl = "https://api.iot.yandex.net"
@@ -88,7 +86,7 @@ func (api *OauthToken) addHeaders(header http.Header) {
 func (api *OauthToken) Info() ResponseGetDevices {
 	req, err := http.NewRequest("GET", ApiUrl+"/v1.0/user/info", nil)
 
-	req.Header.Add("Authorization", api.Token)
+	req.Header.Add("Authorization", "Bearer "+api.Token)
 
 	if err != nil {
 		// handle error
@@ -172,7 +170,7 @@ func (api *OauthToken) Disable(id string) {
 	defer res.Body.Close()
 }
 
-func (api *OauthToken) PrintDevices() {
+func (api *OauthToken) PrintDevices() string {
 	devices := api.Info()
 
 	fmt.Println("Please, choose your device number by number before \")\"")
@@ -195,7 +193,5 @@ func (api *OauthToken) PrintDevices() {
 
 	defer file.Close()
 
-	env.Write(file, "DEVICE_ID", devices.Devices[id].Id)
-
-	fmt.Println("You select: " + input.Text())
+	return devices.Devices[id].Id
 }
