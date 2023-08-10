@@ -18,7 +18,7 @@ func ReadInput() string {
 	return input.Text()
 }
 
-func GenerateEnv() {
+func GenerateEnv() Configuration {
 	_ = godotenv.Load()
 
 	conf := NewConfiguration()
@@ -56,4 +56,6 @@ func GenerateEnv() {
 
 	godotenv.Write(conf.ToMap(), "./.env")
 	godotenv.Load()
+
+	return conf
 }

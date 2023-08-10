@@ -42,6 +42,6 @@ func (c Configuration) ToMap() map[string]string {
 		"PERCENT_MIN":  fmt.Sprint(c.Percent.Min),
 		"PERCENT_MAX":  fmt.Sprint(c.Percent.Max),
 		"YANDEX_OAUTH": c.YandexOauth.Token,
-		"DEVICE_ID":    fmt.Sprint(c.DeviceId),
+		"DEVICE_ID":    c.DeviceId,
 	}
 }

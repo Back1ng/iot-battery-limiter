@@ -78,7 +78,7 @@ func sendSafeRequest(req *http.Request) *http.Response {
 }
 
 func (api *OauthToken) addHeaders(header http.Header) {
-	header.Add("Authorization", api.Token)
+	header.Add("Authorization", "Bearer "+api.Token)
 	header.Add("X-Request-Id", "ac851019-b7dd-45dc-aace-0d9a8e47fc66")
 	header.Add("Content-Type", "application/json")
 }
