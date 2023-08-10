@@ -16,7 +16,7 @@ type Percent struct {
 type Configuration struct {
 	Percent     Percent
 	YandexOauth yandex.OauthToken
-	DeviceId    int
+	DeviceId    string
 }
 
 func NewConfiguration() Configuration {
@@ -24,7 +24,6 @@ func NewConfiguration() Configuration {
 
 	pmin, _ := strconv.Atoi(os.Getenv("PERCENT_MIN"))
 	pmax, _ := strconv.Atoi(os.Getenv("PERCENT_MAX"))
-	devId, _ := strconv.Atoi(os.Getenv("DEVICE_ID"))
 
 	return Configuration{
 		Percent: Percent{
@@ -34,7 +33,7 @@ func NewConfiguration() Configuration {
 		YandexOauth: yandex.OauthToken{
 			Token: os.Getenv("YANDEX_OAUTH"),
 		},
-		DeviceId: devId,
+		DeviceId: os.Getenv("DEVICE_ID"),
 	}
 }
 

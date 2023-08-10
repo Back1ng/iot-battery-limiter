@@ -187,11 +187,5 @@ func (api *OauthToken) PrintDevices() string {
 		// handle error
 	}
 
-	os.Setenv("DEVICE_ID", devices.Devices[id].Id)
-
-	file, err := os.Open("./.env")
-
-	defer file.Close()
-
 	return devices.Devices[id].Id
 }
