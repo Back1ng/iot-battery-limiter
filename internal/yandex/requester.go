@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+type Token string
+
 var ApiUrl = "https://api.iot.yandex.net"
 
 type ResponseGetDevices struct {
@@ -26,36 +28,6 @@ type ResponseGetDevices struct {
 			State       struct {
 				Instance string `json:"instance"`
 				Value    bool   `json:"value"`
-			} `json:"state"`
-		} `json:"capabilities"`
-	} `json:"devices"`
-}
-
-type RequestEnableDevice struct {
-	Devices []struct {
-		Id      string `json="id"`
-		Actions []struct {
-			Type  string `json="type"`
-			State struct {
-				Instance string      `json="instance"`
-				Value    interface{} `json="value"`
-			} `json:"state"`
-		} `json:"actions"`
-	} `json:"devices"`
-}
-
-type ResponseChangeStatusDevice struct {
-	Status    string `json:"status"`
-	RequestID string `json:"request_id"`
-	Devices   []struct {
-		ID           string `json:"id"`
-		Capabilities []struct {
-			Type  string `json:"type"`
-			State struct {
-				Instance     string `json:"instance"`
-				ActionResult struct {
-					Status string `json:"status"`
-				} `json:"action_result"`
 			} `json:"state"`
 		} `json:"capabilities"`
 	} `json:"devices"`
@@ -77,32 +49,33 @@ func sendSafeRequest(req *http.Request) *http.Response {
 	return res
 }
 
-func (api *OauthToken) addHeaders(header http.Header) {
-	header.Add("Authorization", "Bearer "+api.Token)
+func (api Token) addHeaders(header http.Header) {
+	header.Add("Authorization", "Bearer "+string(api))
 	header.Add("X-Request-Id", "ac851019-b7dd-45dc-aace-0d9a8e47fc66")
 	header.Add("Content-Type", "application/json")
 }
 
-func (api *OauthToken) Info() ResponseGetDevices {
+func (api Token) Info() ResponseGetDevices {
+	var result ResponseGetDevices
+
 	req, err := http.NewRequest("GET", ApiUrl+"/v1.0/user/info", nil)
-
-	req.Header.Add("Authorization", "Bearer "+api.Token)
-
 	if err != nil {
-		// handle error
+		fmt.Printf("OauthToken.Info - http.NewRequest: %v", err)
+		return result
 	}
 
-	res := sendSafeRequest(req)
+	api.addHeaders(req.Header)
 
+	res := sendSafeRequest(req)
 	defer res.Body.Close()
 
 	body, err := io.ReadAll(res.Body)
 
 	if err != nil {
-		// handle error
+		fmt.Printf("OauthToken.Info - io.ReadAll: %v", err)
+		return result
 	}
 
-	var result ResponseGetDevices
 	if err := json.Unmarshal(body, &result); err != nil {
 		fmt.Println("Can not unmarshal JSON")
 	}
@@ -110,7 +83,7 @@ func (api *OauthToken) Info() ResponseGetDevices {
 	return result
 }
 
-func (api *OauthToken) GetBody(id, value string) []byte {
+func (api *Token) GetBody(id, value string) []byte {
 	return []byte(fmt.Sprintf(`{
 		"devices": [{
 			"id": "%s",
@@ -125,13 +98,14 @@ func (api *OauthToken) GetBody(id, value string) []byte {
 	}`, id, value))
 }
 
-func (api *OauthToken) Enable(id string) {
+func (api *Token) Enable(id string) {
 	body := api.GetBody(id, "true")
 
 	req, err := http.NewRequest("POST", ApiUrl+"/v1.0/devices/actions", bytes.NewBuffer(body))
 
 	if err != nil {
-		// throw error
+		fmt.Printf("OauthToken.Enable - http.NewRequest: %v", err)
+		return
 	}
 
 	api.addHeaders(req.Header)
@@ -141,6 +115,8 @@ func (api *OauthToken) Enable(id string) {
 	resBody, err := io.ReadAll(res.Body)
 
 	if err != nil {
+		fmt.Printf("OauthToken.Enable - io.ReadAll: %v", err)
+		return
 	}
 
 	defer res.Body.Close()
@@ -148,13 +124,14 @@ func (api *OauthToken) Enable(id string) {
 	fmt.Println(string(resBody))
 }
 
-func (api *OauthToken) Disable(id string) {
+func (api *Token) Disable(id string) {
 	body := api.GetBody(id, "false")
 
 	req, err := http.NewRequest("POST", ApiUrl+"/v1.0/devices/actions", bytes.NewBuffer(body))
 
 	if err != nil {
-		// handle error
+		fmt.Printf("OauthToken.Disable - http.NewRequest: %v", err)
+		return
 	}
 
 	api.addHeaders(req.Header)
@@ -164,18 +141,17 @@ func (api *OauthToken) Disable(id string) {
 	_, err = io.ReadAll(res.Body)
 
 	if err != nil {
-		// handle error
+		fmt.Printf("OauthToken.Disable - io.ReadAll: %v", err)
+		return
 	}
-
-	defer res.Body.Close()
 }
 
-func (api *OauthToken) PrintDevices() string {
+func (api *Token) PrintDevices() string {
 	devices := api.Info()
 
 	fmt.Println("Please, choose your device number by number before \")\"")
 	for i, d := range devices.Devices {
-		fmt.Println(fmt.Sprintf("%d) Name: %s, Id: %s", i, d.Name, d.Id))
+		fmt.Printf("%d) Name: %s, Id: %s\n", i, d.Name, d.Id)
 	}
 
 	input := bufio.NewScanner(os.Stdin)
@@ -184,7 +160,8 @@ func (api *OauthToken) PrintDevices() string {
 	id, err := strconv.Atoi(input.Text())
 
 	if err != nil {
-		// handle error
+		fmt.Printf("OauthToken.PrintDevices - strconv.Atoi: %v", err)
+		return ""
 	}
 
 	return devices.Devices[id].Id

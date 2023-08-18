@@ -15,7 +15,7 @@ type Percent struct {
 
 type Configuration struct {
 	Percent     Percent
-	YandexOauth yandex.OauthToken
+	YandexOauth yandex.Token
 	DeviceId    string
 }
 
@@ -30,10 +30,8 @@ func NewConfiguration() Configuration {
 			Min: pmin,
 			Max: pmax,
 		},
-		YandexOauth: yandex.OauthToken{
-			Token: os.Getenv("YANDEX_OAUTH"),
-		},
-		DeviceId: os.Getenv("DEVICE_ID"),
+		YandexOauth: yandex.Token(os.Getenv("YANDEX_OAUTH")),
+		DeviceId:    os.Getenv("DEVICE_ID"),
 	}
 }
 
@@ -41,7 +39,7 @@ func (c Configuration) ToMap() map[string]string {
 	return map[string]string{
 		"PERCENT_MIN":  fmt.Sprint(c.Percent.Min),
 		"PERCENT_MAX":  fmt.Sprint(c.Percent.Max),
-		"YANDEX_OAUTH": c.YandexOauth.Token,
+		"YANDEX_OAUTH": string(c.YandexOauth),
 		"DEVICE_ID":    c.DeviceId,
 	}
 }

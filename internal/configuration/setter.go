@@ -37,7 +37,7 @@ func GenerateEnv() Configuration {
 		conf.Percent.Min = min
 	}
 
-	if len(conf.YandexOauth.Token) == 0 {
+	if len(conf.YandexOauth) == 0 {
 		fmt.Println("Next, you need login at yandex on the next link and write code.")
 		fmt.Println("Press any key, when you ready to open browser.")
 
@@ -45,9 +45,7 @@ func GenerateEnv() Configuration {
 
 		browser.OpenURL("https://oauth.yandex.ru/authorize?response_type=token&client_id=1e9f9d503a8749619d4a0539c1e7bb0c")
 
-		conf.YandexOauth = yandex.OauthToken{
-			Token: ReadInput(),
-		}
+		conf.YandexOauth = yandex.Token(ReadInput())
 	}
 
 	if len(conf.DeviceId) == 0 {
